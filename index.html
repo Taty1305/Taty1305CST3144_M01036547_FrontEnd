@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="public/imagens/ClassHub.icon.png" type="image/x-icon">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <title>ClassHub</title>
+   
+</head>
+
+<body>
+    
+    <div id="lesson">
+        <h1>Welcome to ClassHub</h1>
+
+        <button
+            @click="toggleCart"
+            :disabled="numberOfItems === 0 && !displayCart">
+            {{ displayCart ? 'Continue Shopping' : 'Checkout' }} ({{ numberOfItems }})<!--Shortcut to transition Button-->
+        </button>   
+
+        <div v-if="!displayCart">
+            <h2>After-School Lessons</h2>
+
+            <div 
+                v-for="lesson in lessons"
+                :key="lesson.id">
+
+                <img
+                    :src="lesson.image"
+                    :alt="lesson.alt"
+                    width="300">
+
+                <h3>Lessson: {{ lesson.subject}}</h3>
+                <p>ID: {{ lesson.id}}</p>
+                <p>Location: {{lesson.location}}</p>
+                <p>Price: £{{lesson.price}}</p>
+                <p>Availability: {{lesson.availability}}</p>
+
+                <button
+                    @click="addToCart(lesson)"
+                    :disable="!canAddToCart(lesson)">
+                    Add to Cart
+                </button>
+            </div>
+        </div>
+
+        <div v-else>
+            <h2>CheckOut</h2>
+            <p>Items in cart: {{ numberOfItems}}</p>
+            <p v-if="numberOfItems === 0"> Your Cart is empty</p>
+            <ul v-else>
+                <li 
+                    v-for="(id, index) in cart"
+                    :key="index">
+                    Lesson ID: {{ id }}
+                </li>
+            </ul>
+        </div>
+
+    </div>
+
+    <script type="module">
+        const {createApp} = Vue
+        const myApp = createApp ({
+            data() {
+                return {
+
+                    lessons: [ 
+                        {
+                            id: 1001,
+                            subject: 'Maths',
+                            location: "Hendon",
+                            price: 25,
+                            availability: 5,
+                            image:"public/imagens/Maths.lesson.png",
+                            alt: "Maths lesson"
+                        },
+                        {
+                            id: 1002,
+                            subject: 'English',
+                            location: "Golders Green",
+                            price: 30,
+                            availability: 5,
+                            image:"public/imagens/English.lesson.png",
+                            alt: "English lesson"   
+                        },
+                        {
+                            id: 1003,
+                            subject: 'Biology',
+                            location: "Hendon",
+                            price: 40,
+                            availability: 5,
+                            image:"public/imagens/Biology.lesson.png",
+                            alt: "Biology lesson"   
+                        },
+                        {
+                            id: 1004,
+                            subject: 'History',
+                            location: "Kilburn",
+                            price: 30,
+                            availability: 5,
+                            image:"public/imagens/History.lesson.png",
+                            alt: "History lesson"   
+                        },
+                        {
+                            id: 1005,
+                            subject: 'Physics',
+                            location: "Hendon",
+                            price: 20,
+                            availability: 5,
+                            image:"public/imagens/Physics.lesson.png",
+                            alt: "Physics lesson",   
+                        },
+                        {
+                            id: 1006,
+                            subject: 'Chemistry',
+                            location: "Golders Green",
+                            price: 30,
+                            availability: 5,
+                            image:"public/imagens/Chemistry.lesson.png",
+                            alt: "Chemistry lesson"   
+                        },
+                        {
+                            id: 1007,
+                            subject: 'Science',
+                            location: "Hendon",
+                            price: 40,
+                            availability: 5,
+                            image:"public/imagens/Science.lesson.png",
+                            alt: "Science lesson"   
+                        },
+                        {
+                            id: 1008,
+                            subject: 'Coding',
+                            location: "Hendon",
+                            price: 40,
+                            availability: 5,
+                            image:"public/imagens/Coding.lesson.png",
+                            alt: "Coding lesson"   
+                        }
+
+                    ],
+
+                    cart: [],
+                    displayCart:false
+                    
+                };
+            },
+
+            methods: {
+                addToCart(lesson) {
+                    if (this.canAddToCart(lesson)) {
+                        this.cart.push(lesson.id);
+                        lesson.availability--;
+                   }
+                    
+                },
+
+                canAddToCart(lesson) {
+                    return lesson.availability > 0;
+                },
+
+                toggleCart() {
+                    this.displayCart = !this.displayCart;
+                }
+            },
+
+            computed: {
+                numbersOfItems() {
+                    return this.cart.length;
+                }
+            },
+        })
+        myApp.mount('#lesson')
+    </script>
+    
+</body>
+</html>
