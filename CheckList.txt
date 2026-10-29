@@ -1,0 +1,27 @@
+Front-End: 
+
+• Displaying all the 10 Lessons 
+• Each lesson has 5 Availability.
+• Each lesson has: Subject, Location, Price, Availability
+• Availability indicates how many is left and how many is in the cart
+• Each Lesson has a Image
+• There is favicon icon on the name of the website
+• v-for used for display of the lesson list
+• There is bottom for the user to choose how they want to sort the lesson ascending or descending order:subject, location, price, or spaces
+• There is Add to Cart” functionality the bottom is visible, and only enabled when space is larger than 0
+• Clicking the button once will add one space to the shopping cart, reducing the remaining space by one, Once there is no more space, the “Add to cart” button should be disabled but still visible
+• Clicking the shopping cart button will show the cart page, and clicking the button again goes back to the lesson page.
+• In the shopping cart page, the user is able to remove lessons from the shopping cart; the removed lesson is added back to the lesson list
+• There is input box for a full name and phone number
+• The “checkout” button is always visible and only enabled confirm order (clickable) after  “Name” and “Phone” are provided in name just letters are enabled and in phone just number are provided.
+• By clicking the “checkout” button will display a message confirming the order has 
+been submitted.
+ 
+
+ 
+ 
+
+ 
+
+ 
+ 

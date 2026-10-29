@@ -24,52 +24,146 @@
         <div v-if="!displayCart">
             <h2>After-School Lessons</h2>
 
-            <div 
-                v-for="lesson in lessons"
-                :key="lesson.id">
+            <div class="sorting-controls">
+                <h3>Sort Lessons</h3>
 
-                <img
-                    :src="lesson.image"
-                    :alt="lesson.alt"
-                    width="300">
+                <label for="sortType">Sort lessons by:</label>
 
-                <h3>Lessson: {{ lesson.subject}}</h3>
-                <p>ID: {{ lesson.id}}</p>
-                <p>Location: {{lesson.location}}</p>
-                <p>Price: £{{lesson.price}}</p>
-                <p>Availability: {{lesson.availability}}</p>
+                <select id="sortType" v-model="sortType">
+                    <option value="price">Price</option>
+                    <option value="availability">Availability</option>
+                    <option value="location">Location</option>
+                    <option value="subject">Subject</option>
+                </select>
 
-                <button
-                    @click="addToCart(lesson)"
-                    :disable="!canAddToCart(lesson)">
-                    Add to Cart
-                </button>
+                <br><br>
+
+                <label for="sortAscending">
+                <input
+                    id="sortAscending"
+                    type="checkbox"
+                    v-model="sortAscending"
+                >
+                    Increasing order
+                </label>
             </div>
+            <br>
+
+            <div class="lessons-container">
+
+                <div 
+                    class="lesson-card"
+                    v-for="lesson in sortedLessons"
+                    :key="lesson.id"
+                    >
+
+                    <img 
+                        :src="lesson.image"
+                        :alt="lesson.alt"
+                        width="300"
+                    >
+
+                    <h3>Lesson: {{ lesson.subject }}</h3>
+                    <p>ID: {{ lesson.id }}</p>
+                    <p>Location: {{ lesson.location }}</p>
+                    <p>Price: £{{ lesson.price }}</p>
+                    <p>Availability: {{ lesson.availability }}</p>
+
+                    <button 
+                        @click= "addToCart(lesson)" 
+                        :disabled= "!canAddToCart(lesson)"
+                    > 
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+            
         </div>
 
         <div v-else>
             <h2>CheckOut</h2>
-            <p>Items in cart: {{ numberOfItems}}</p>
+            <p>Total items in cart: {{ numberOfItems}}</p>
             <p v-if="numberOfItems === 0"> Your Cart is empty</p>
-            <ul v-else>
-                <li 
-                    v-for="(id, index) in cart"
-                    :key="index">
-                    Lesson ID: {{ id }}
-                </li>
-            </ul>
-        </div>
+            <div
+                v-for="lesson in sortedLessons"
+                :key="lesson.id"
+            >
+            
+                <div
+                    class="checkout-card"
+                    v-if="countLessonInCart(lesson.id) > 0"
+                >
 
-    </div>
+                    <h3>{{ lesson.subject }}</h3>
+
+                    <p>Lesson ID: {{ lesson.id }}</p>
+
+                    <p>
+                        Quantity: {{ countLessonInCart(lesson.id) }}
+                    </p>
+
+                    <p> Price per lesson: £{{ lesson.price }}</p>
+
+                    <p>
+                        Subtotal: £{{ lesson.price * countLessonInCart(lesson.id) }}
+                    </p>
+
+                    <button 
+                        @click="removeFromCart(lesson)">
+                        Remove one
+                    </button>
+                    
+                </div>
+            </div>
+
+            <form 
+                v-if="numberOfItems > 0"
+                @submit.prevent="checkout">
+
+                <h3>Customer Information</h3>
+                <label for="customerName">Full Name: </label>
+                <input 
+                    type="text"
+                    id="customerName" 
+                    v-model.trim="order.name"
+                    placeholder="Enter your full name" 
+                    pattern="[A-Za-z ]+"
+                    title="Please enter letters and spaces only." required>
+
+                <label for="customerTelephone">
+                    Telephone Number: 
+                </label>
+
+                <input 
+                    type="tel"
+                    id="customerTelephone"
+                    v-model.trim="order.telephone"
+                    placeholder="Enter you telephone number" pattern="[0-9]+"
+                    title="Please enter numbers only." required
+                >
+
+                <button
+                    type="submit"
+                    :disabled="!canCheckout">
+                    Confirm Order
+                </button>
+
+            </form>
+
+            <p v-if="orderConfirmed" class="success"> Your order has been confirmed</p>
+
+        </div>
+    </div> 
 
     <script type="module">
         const {createApp} = Vue
         const myApp = createApp ({
+
             data() {
                 return {
 
-                    lessons: [ 
-                        {
+                    lessons: [], 
+                            /*   {
                             id: 1001,
                             subject: 'Maths',
                             location: "Hendon",
@@ -140,22 +234,70 @@
                             availability: 5,
                             image:"public/imagens/Coding.lesson.png",
                             alt: "Coding lesson"   
+                        },
+                        {
+                            id:1009,
+                            subject: "Piano",
+                            location: "Hendon",
+                            price: 40,
+                            availability: 5,
+                            image: "public/imagens/Piano.activities.png",
+                            alt: "Piano lesson"
+                        },
+                        {
+                            id:1010,
+                            subject: "Football",
+                            location: "Hendon",
+                            price: 20,
+                            availability: 5,
+                            image: "public/imagens/Football.activities.png",
+                            alt: "Football lesson"
                         }
 
-                    ],
+                    ],*/
 
                     cart: [],
-                    displayCart:false
+                    displayCart: false,
                     
+                    order: {
+                        name: "",
+                        telephone: ""
+                    },
+
+                    orderConfirmed: false,
+
+                    sortAscending: true,
+
+                    sortType: "price"
                 };
+
             },
 
             methods: {
+                //Send a request t back-end server to converts the JSON File and return the lessons
+                async fetchData() {
+                    const url = "http://localhost:3000/";
+
+                    try {
+                        const response = await fetch(url);
+
+                        if (!response.ok) {
+                            throw new Error("Failed to fetch lessons");
+                        }
+
+                        this.lessons = await response.json();
+
+                    } catch (error) {
+                    console.error("Error fetching lessons:", error);
+                    }
+                },
+                
                 addToCart(lesson) {
                     if (this.canAddToCart(lesson)) {
                         this.cart.push(lesson.id);
                         lesson.availability--;
-                   }
+                        this.orderConfirmed = false;
+                    }
                     
                 },
 
@@ -165,16 +307,75 @@
 
                 toggleCart() {
                     this.displayCart = !this.displayCart;
-                }
+                },
+                
+                //Will counts how many times each lesson id will appears
+                countLessonInCart(id) {
+                    return this.cart.filter(cartId => cartId === id).length;
+                },
+                
+                //Will removes only one matching ID and increases that lesson availability by one
+                removeFromCart(lesson) {
+                    const index = this.cart.indexOf(lesson.id);
+
+                    if(index !== -1) {
+                        this.cart.splice(index, 1);
+                        lesson.availability++;
+                        this.orderConfirmed = false;
+                    }
+                },
+
+                checkout() {
+                    if(this.canCheckout && this.numberOfItems > 0) {
+                        this.cart = [];
+                        this.order.name = "";
+                        this.order.telephone = "";
+                        this.orderConfirmed = true;
+                    }
+                },
+
+            
             },
 
             computed: {
-                numbersOfItems() {
+                
+                numberOfItems() {
                     return this.cart.length;
-                }
+                },
+
+                canCheckout() {
+                    return (
+                        this.order.name.trim() !== "" &&
+                        this.order.telephone.trim() !== "" &&
+                        this.numberOfItems > 0
+                    );
+                },
+
+                sortedLessons() {
+                    return [...this.lessons].sort((a, b) => {
+                        let result;
+
+                        if (this.sortType === "price" || 
+                            this.sortType === "availability") {
+                            
+                            result = a[this.sortType] - b[this.sortType];
+                        } else {
+                            result = a[this.sortType].localeCompare(
+                                b[this.sortType],undefined,{ sensitivity:"base"}
+                        );
+                    }
+                    return this.sortAscending ? result : -result;
+                    }
+
+                    )},
             },
-        })
-        myApp.mount('#lesson')
+
+            created() {
+                this.fetchData();
+            }
+        });
+
+        myApp.mount('#lesson');
     </script>
     
 </body>
