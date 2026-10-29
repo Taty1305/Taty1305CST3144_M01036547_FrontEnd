@@ -342,16 +342,42 @@
                     }
                 },
 
-                checkout() {
-                    if(this.canCheckout && this.numberOfItems > 0) {
+                async checkout() {
+                    if (!this.canCheckout || this.numberOfItems ===0) {
+                        return;
+                    }    
+
+                    const orderData = {
+                        name: this.order.name,
+                        telephone: this.order.telefone,
+                        cart: [...this.cart] 
+                    };
+
+                    try {
+                        const response = await fetch("http://localhost:3000/orders", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify(orderData)
+                        });
+
+                        if (!response.ok) {
+                            throw new Error("Order Fail");
+                        }
+                        const result = await response.json();
+                        console.log(result.message);
+
+                //This will clear the cart after the order was confirmed
                         this.cart = [];
                         this.order.name = "";
                         this.order.telephone = "";
                         this.orderConfirmed = true;
+                    } catch (error) {
+                        console.error("Fail to submitting order:", error);
+                        alert("Your order could not be submitted. Please try Again");
                     }
-                },
-
-            
+                }
             },
 
             computed: {
